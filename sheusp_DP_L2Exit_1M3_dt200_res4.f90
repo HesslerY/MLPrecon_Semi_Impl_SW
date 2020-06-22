@@ -40,15 +40,15 @@ DOUBLE PRECISION :: MGH1IHX(M),  &
                & BC(M),       &
                & AD(M),       &
                & BD(M), A, B, C, D
-DOUBLE PRECISION ::U_23(N,M),&
-                 & V_23(N,M),     &
-                 & HX_23(N,M),     &
-                 & HY_23(N,M),     &
-                 & DHX2Y_23(N,M),  &
-                 & S_23(N,M),      &
-                 & X_23(N),        &
-                 & Y_23(M+1),        &
-                 & COR_23(N,M)
+DOUBLE PRECISION ::U_52(N,M),&
+                 & V_52(N,M),     &
+                 & HX_52(N,M),     &
+                 & HY_52(N,M),     &
+                 & DHX2Y_52(N,M),  &
+                 & S_52(N,M),      &
+                 & X_52(N),        &
+                 & Y_52(M+1),        &
+                 & COR_52(N,M)
 
 DOUBLE PRECISION ::TIME,&
                & DX, &
@@ -56,9 +56,9 @@ DOUBLE PRECISION ::TIME,&
                & DT, &
                & mue
 
-DOUBLE PRECISION :: DX_23, &
-               & DY_23, &
-               & DT_23
+DOUBLE PRECISION :: DX_52, &
+               & DY_52, &
+               & DT_52
 
 INTEGER :: IP(N)
 DOUBLE PRECISION :: sum_time, sum_lp_time
@@ -109,14 +109,14 @@ DOUBLE PRECISION :: Alp_REL(N,M), &
 
 
 
-DOUBLE PRECISION ::  F0_23
-DOUBLE PRECISION :: G_23
-DOUBLE PRECISION ::  R_23
+DOUBLE PRECISION ::  F0_52
+DOUBLE PRECISION :: G_52
+DOUBLE PRECISION ::  R_52
 
 ! CHARACTERISTICS OF THE FLOW
-DOUBLE PRECISION :: USCAL_23 
-DOUBLE PRECISION ::  H00_23   
-DOUBLE PRECISION ::  HMTS_23, GMM_23, AMM, DETI
+DOUBLE PRECISION :: USCAL_52 
+DOUBLE PRECISION ::  H00_52   
+DOUBLE PRECISION ::  HMTS_52, GMM_52, AMM, DETI
 
 Integer :: IPRINT
 
@@ -152,12 +152,12 @@ DOUBLE PRECISION ::PI, &
      & GI, &
      & EP
      
-DOUBLE PRECISION :: PI_23, &
-     & PI2_23, &
-     & PIH_23, &
-     & PVEL_23, &
-     & BETA_23, &
-     & GI_23
+DOUBLE PRECISION :: PI_52, &
+     & PI2_52, &
+     & PIH_52, &
+     & PVEL_52, &
+     & BETA_52, &
+     & GI_52
 
 INTEGER :: IORD, &
          & ISOR, &
@@ -173,10 +173,10 @@ DOUBLE PRECISION :: GC1, &
      & GH1, &
      & GH2
 
-DOUBLE PRECISION :: GC1_23, &
-     & GC2_23, &
-     & GH1_23, &
-     & GH2_23
+DOUBLE PRECISION :: GC1_52, &
+     & GC2_52, &
+     & GH1_52, &
+     & GH2_52
      
 DOUBLE PRECISION :: D0, &
      & S_full         , &
@@ -208,8 +208,8 @@ mountain = .false.
 stencil=0
 
 
-do ID_PREC=7,7,-5
- do IRHW = 1,1
+do ID_PREC=0,0,-5
+ do IRHW = 3,3
 
   do DP_Depth=0,0,2
    write(Dp_depth_str,*) DP_Depth
@@ -248,91 +248,91 @@ do ID_PREC=7,7,-5
 
 !If (IRHW==0) then
 ! DATA NT,NPRINT/12096,864/
-!  DT_23=100.0d0 
+!  DT_52=100.0d0 
 ! ! what if it ran with the timestep of the explicit model 
-! !DT_23=40.0d0   
-! DT = DT_23
+! !DT_52=40.0d0   
+! DT = DT_52
 !else
 !   DATA NT,NPRINT/2016,144/
-! DT_23=600.0d0 
+! DT_52=600.0d0 
 !if (IRHW==2) then
 !NT = 4032 
 !NPRINT =288
-!DT_23=300.0d0 
+!DT_52=300.0d0 
 !else
 !NT = 3456 !240 
 !NPRINT =216
-!DT_23=400.0d0
+!DT_52=400.0d0
 !endif
 if (IRHW==2) then
 !DATA NT,NPRINT/12096,864/
 NT = 2*int(2*6376) !12960  
 NPRINT =int(2*797)!864
-DT_23=100.0d0
+DT_52=100.0d0
 KMX=4
 mpfl=999999
 elseif(IRHW==1) then
 !DATA NT,NPRINT/12096,864/
 NT = 6376 !int(6376*(200.0/240.0)) !12960  
 NPRINT =797 !797 !int(797*(200.0/240.0)) !864
-DT_23=200.0d0
+DT_52=200.0d0
 KMX=4
-atau=200.*DT_23 ! RHW4
+atau=200.*DT_52 ! RHW4
 mpfl=999999
 elseif(IRHW==3) then
 !DATA NT,NPRINT/12096,864/
 NT = 6376 !int(6376*(200.0/240.0)) !12960  
 NPRINT = 797 !797 !797 !int(797*(200.0/240.0)) !864
-DT_23=200.0d0
+DT_52=200.0d0
 KMX=4
-atau=2.*DT_23    !Zonal flow past Earth orography
+atau=2.*DT_52    !Zonal flow past Earth orography
 mpfl=999999
 endif
  ! what if it ran with the timestep of the explicit model 
- ! DT_23=40.0d0   
- DT = DT_23
+ ! DT_52=40.0d0   
+ DT = DT_52
 !endif
  ! what if it ran with the timestep of the explicit model 
  ! DATA NT,NPRINT/30240,2160/
  !!! start of calculating every coefficient in HP
  
  
-F0_23=1.4584E-4
-F0=F0_23
+F0_52=1.4584E-4
+F0=F0_52
 
  
-G_23 =9.80616
-G=G_23
-GI_23=1.0d0/G_23
-GI = GI_23
+G_52 =9.80616
+G=G_52
+GI_52=1.0d0/G_52
+GI = GI_52
 
 ! end param test1
-R_23=6371.22E+03
-R=R_23
+R_52=6371.22E+03
+R=R_52
 
 
 ! CHARACTERISTICS OF THE FLOW
-USCAL_23 = 20.!Piotrs new numbers old !5.0d0
-H00_23  = 8.E3
-HMTS_23  = 0.E3 
+USCAL_52 = 20.!Piotrs new numbers old !5.0d0
+H00_52  = 8.E3
+HMTS_52  = 0.E3 
 
  !Piotrs new numbers old 6.E3  !! changed from HMTS  = 2.E3 in accordance to explicit
 if (IRHW==2) then
 !  
   mountain=.true.
-  USCAL_23 = 20.0d0 
-  H00_23   = 5960.0d0 
-  HMTS_23  = 1.0d0 
+  USCAL_52 = 20.0d0 
+  H00_52   = 5960.0d0 
+  HMTS_52  = 1.0d0 
 !
 elseif(IRHW==3) then
-USCAL_23 = 20.!Piotrs new numbers old !5.0d0
-H00_23  = 8.E3
-  HMTS_23  = 1.0 
+USCAL_52 = 20.!Piotrs new numbers old !5.0d0
+H00_52  = 8.E3
+  HMTS_52  = 1.0 
   endif
 
-USCAL=USCAL_23
-H00 = H00_23
-HMTS= HMTS_23
+USCAL=USCAL_52
+H00 = H00_52
+HMTS= HMTS_52
 
 
 DTFIL(:) = NFIL*40.0d0
@@ -358,27 +358,27 @@ ICOUNT = 0
 
 !COMPUTE SOME RELEVANT CONSTANTS
 
-PI_23=ACOS(-1.0d0)
-PI = PI_23
-PI2_23=2.0d0*PI_23
-PI2 = PI2_23
-PIH_23=0.5d0*PI_23
-PIH = PIH_23
+PI_52=ACOS(-1.0d0)
+PI = PI_52
+PI2_52=2.0d0*PI_52
+PI2 = PI2_52
+PIH_52=0.5d0*PI_52
+PIH = PIH_52
 TIME=0.0d0
-PVEL_23=USCAL_23/R_23
-PVEL = PVEL_23
-F0_23=ICORIO*F0_23
-F0 = F0_23
+PVEL_52=USCAL_52/R_52
+PVEL = PVEL_52
+F0_52=ICORIO*F0_52
+F0 = F0_52
 
 ! BETA IS AN ANGLE IN THE ZONAL FLOW TEST
 
-BETA_23=0.0d0 
+BETA_52=0.0d0 
 if (IRHW==2) then
-BETA_23=0.0d0 
+BETA_52=0.0d0 
 endif
-BETA = BETA_23
-H00_23=G_23*H00_23
-H00 = H00_23
+BETA = BETA_52
+H00_52=G_52*H00_52
+H00 = H00_52
 
 
 ! PARAMETERS FOR MPDATA ADVECTION
@@ -394,40 +394,40 @@ EP= 1.E-6   !! ersetzen durch tiny times factor oder was aehnliches
 !COMPUTE GRID      
 
 
-DX_23= PI2/FLOAT(N-2)
-DX = DX_23
-DY_23= PI/FLOAT(M)
-DY = DY_23
+DX_52= PI2/FLOAT(N-2)
+DX = DX_52
+DY_52= PI/FLOAT(M)
+DY = DY_52
 ! param test2
 
 
-GC1_23= DT/DX                                ! DT/DX
-GC1 = GC1_23
-GC2_23= DT/DY                                        ! DT/DY
-GC2 = GC2_23
+GC1_52= DT/DX                                ! DT/DX
+GC1 = GC1_52
+GC2_52= DT/DY                                        ! DT/DY
+GC2 = GC2_52
 
-GH1_23= .5*GC1                         ! 0.5d0*GC1
-GH1 = GH1_23
-GH2_23= .5*GC2                                ! 0.5d0*GC2
-GH2 = GH2_23
+GH1_52= .5*GC1                         ! 0.5d0*GC1
+GH1 = GH1_52
+GH2_52= .5*GC2                                ! 0.5d0*GC2
+GH2 = GH2_52
 
 
 ! end param test2
 
 DO J=1,M+1
-  Y_23(J)=-PIH+(float(J)-0.5)*DY
+  Y_52(J)=-PIH+(float(J)-0.5)*DY
 
-  Y(J) = Y_23(J)
+  Y(J) = Y_52(J)
 
 end do
 
 
 DO I=2,N-1
-  X_23(I)=(float(I)-1)*DX_23
-  X(I) = X_23(I)
+  X_52(I)=(float(I)-1)*DX_52
+  X(I) = X_52(I)
 end do
-X_23(1)=X_23(N-1)
-X_23(N)=X_23(2)
+X_52(1)=X_52(N-1)
+X_52(N)=X_52(2)
 
 X(1)=X(N-1)
 X(N)=X(2)
@@ -442,11 +442,11 @@ DO J=1,M
     ! param test3
 
 
-    HX_23(I,J)=R_23*COS(Y_23(J))
+    HX_52(I,J)=R_52*COS(Y_52(J))
 
-    HX(I,J) = HX_23(I,J)
-    HY_23(I,J)=R_23
-    HY(I,J) = HY_23(I,J)
+    HX(I,J) = HX_52(I,J)
+    HY_52(I,J)=R_52
+    HY(I,J) = HY_52(I,J)
 
 
     ! end param test3
@@ -454,8 +454,8 @@ DO J=1,M
     !param test4
 
 
-    S_23(I,J)=HX_23(I,J)*HY_23(I,J)
-    S(I,J) = S_23(I,J)
+    S_52(I,J)=HX_52(I,J)*HY_52(I,J)
+    S(I,J) = S_52(I,J)
 
 
     ! end param test4
@@ -468,21 +468,21 @@ end do
 
 DO I=2,N-1
   DO J=2,M-1
-    DHX2Y_23(I,J)= (HX_23(I,J+1)-HX_23(I,J-1))*GC2_23/S_23(I,J)*.5
-    DHX2Y(I,J) = DHX2Y_23(I,J) 
+    DHX2Y_52(I,J)= (HX_52(I,J+1)-HX_52(I,J-1))*GC2_52/S_52(I,J)*.5
+    DHX2Y(I,J) = DHX2Y_52(I,J) 
   end do
 
-  DHX2Y_23(I,1)= (HX_23(I,  2)+HX_23(I,  1))*GC2_23/S_23(I,1)*.5
-  DHX2Y(I,1) = DHX2Y_23(I,1)
-  DHX2Y_23(I,M)=-(HX_23(I,  M)+HX_23(I,M-1))*GC2_23/S_23(I,M)*.5
-  DHX2Y(I,M) = DHX2Y_23(I,M) 
+  DHX2Y_52(I,1)= (HX_52(I,  2)+HX_52(I,  1))*GC2_52/S_52(I,1)*.5
+  DHX2Y(I,1) = DHX2Y_52(I,1)
+  DHX2Y_52(I,M)=-(HX_52(I,  M)+HX_52(I,M-1))*GC2_52/S_52(I,M)*.5
+  DHX2Y(I,M) = DHX2Y_52(I,M) 
 end do
 
 
 !end param test5
       
 CALL XBC(DHX2Y,N,M)
-CALL XBC_23(DHX2Y_23,N,M)
+CALL XBC_52(DHX2Y_52,N,M)
 
 
 
@@ -490,21 +490,21 @@ CALL XBC_23(DHX2Y_23,N,M)
 !CONDITIONS OF THE INITIAL STATE ***********************************
 
 If (IRHW.EQ.2)then
-  CALL TOPOGR(P0_HP,X_23,Y_23,N,M, mountain)
+  CALL TOPOGR(P0_HP,X_52,Y_52,N,M, mountain)
 elseif (IRHW.EQ.3)then
-  CALL EARTHTOPO(P0_HP,X_23,Y_23,N,M)
+  CALL EARTHTOPO(P0_HP,X_52,Y_52,N,M)
   CALL SMOOTHTOP(P0_HP,PC,IP,N,M)
 else
   P0_HP(:,:)=0.0
 endif
 
-IF(IRHW.EQ.0) CALL INITZON(U_23,V_23,PT_HP,COR_23,X_23,Y_23,N,M,F0_23,BETA_23,H00_23,R_23,PVEL_23)
-IF(IRHW.EQ.1) CALL INITRHW(U_23,V_23,PT_HP,COR_23,X_23,Y_23,N,M,F0_23,R_23)
-IF(IRHW.EQ.2) CALL INITZON(U_23,V_23,PT_HP,COR_23,X_23,Y_23,N,M,F0_23,BETA_23,H00_23,R_23,PVEL_23)
-IF(IRHW.EQ.3) CALL INITZON(U_23,V_23,PT_HP,COR_23,X_23,Y_23,N,M,F0_23,BETA_23,H00_23,R_23,PVEL_23)
+IF(IRHW.EQ.0) CALL INITZON(U_52,V_52,PT_HP,COR_52,X_52,Y_52,N,M,F0_52,BETA_52,H00_52,R_52,PVEL_52)
+IF(IRHW.EQ.1) CALL INITRHW(U_52,V_52,PT_HP,COR_52,X_52,Y_52,N,M,F0_52,R_52)
+IF(IRHW.EQ.2) CALL INITZON(U_52,V_52,PT_HP,COR_52,X_52,Y_52,N,M,F0_52,BETA_52,H00_52,R_52,PVEL_52)
+IF(IRHW.EQ.3) CALL INITZON(U_52,V_52,PT_HP,COR_52,X_52,Y_52,N,M,F0_52,BETA_52,H00_52,R_52,PVEL_52)
 
 If (QRelax) then
-CALL POLARABS(Alp_REL,atau,Y_23,DT_23,N,M)
+CALL POLARABS(Alp_REL,atau,Y_52,DT_52,N,M)
 else
 Alp_REL(:,:)=0.0d0
 endif
@@ -515,12 +515,12 @@ IF(IRST.EQ.0) THEN
 ! INITIATE PRIMARY VARIABLES (PD, QX, QY)
   DO J=1,M
     DO I=1,N
-      COR(I,J)=COR_23(I,J)*DT_23 
-      P0_HP(I,J)=  P0_HP(I,J)*HMTS_23
-      PD_HP(I,J)= max(rpe_0, PT_HP(I,J)*GI_23-P0_HP(I,J))
+      COR(I,J)=COR_52(I,J)*DT_52 
+      P0_HP(I,J)=  P0_HP(I,J)*HMTS_52
+      PD_HP(I,J)= max(rpe_0, PT_HP(I,J)*GI_52-P0_HP(I,J))
 
-      QX_HP(I,J)=PD_HP(I,J)*U_23(I,J)
-      QY_HP(I,J)=PD_HP(I,J)*V_23(I,J)
+      QX_HP(I,J)=PD_HP(I,J)*U_52(I,J)
+      QY_HP(I,J)=PD_HP(I,J)*V_52(I,J)
 
       QXS(I,J)=QX_HP(I,J)
       QYS(I,J)=QY_HP(I,J)
@@ -535,13 +535,13 @@ S_full=0.0d0
 
   DO J=1,M
     DO I=2,N-1
-      S_full=S_full+S_23(I,J)
+      S_full=S_full+S_52(I,J)
     end do
   end do
   write(*,*) 'Area Earth', S_full
   DO J=1,M
     DO I=2,N-1
-      D0=D0+PD_HP(I,J)*S_23(I,J)/S_full
+      D0=D0+PD_HP(I,J)*S_52(I,J)/S_full
     end do
   end do
   write(*,*) 'average Depth', D0  
@@ -604,8 +604,8 @@ endif
 
   DO J=1,M
     DO I=1,N
-      U(I,J,0) =U_23(I,J)
-      V(I,J,0) =V_23(I,J)
+      U(I,J,0) =U_52(I,J)
+      V(I,J,0) =V_52(I,J)
       U(I,J,1)=U(I,J,0)
       V(I,J,1)=V(I,J,0)
     end do
@@ -708,9 +708,9 @@ IF(IANAL.EQ.0) THEN
 
     Exit_Cond=maxval(ABS(D_Adv(:,:)))
     !do J=1,M
-    !  write(*,*) J, maxval(ABS(D_Adv(:,J)))*D0*G_23*DT_23
+    !  write(*,*) J, maxval(ABS(D_Adv(:,J)))*D0*G_52*DT_52
     !enddo
-    Exit_Cond=2.0d0*Exit_Cond*D0*G_23*DT_23
+    Exit_Cond=2.0d0*Exit_Cond*D0*G_52*DT_52
     !write(*,*) 'Exit_Cond', Exit_Cond
 
   !endif 
@@ -800,7 +800,7 @@ IF(IANAL.EQ.0) THEN
    IF(QRelax) then !! define reference values for polar absorbers
     IF(IRHW==1) then
            
-      CALL RHWT(U0,V0,PT0,PD0,P0,COR_23,X_23,Y_23,N,M,F0_23,R_23,KT*DT_23)
+      CALL RHWT(U0,V0,PT0,PD0,P0,COR_52,X_52,Y_52,N,M,F0_52,R_52,KT*DT_52)
        DO J=1,M
         DO I=1,N
          QXS(I,J)=U0(I,J)*PD0(I,J)
@@ -960,7 +960,7 @@ IF(IANAL.EQ.0) THEN
       
       DO J=1,M
         DO I=1,N
-            PD_HP(I,J)= max(EP, PT_HP(I,J)*GI_23-P0_HP(I,J))
+            PD_HP(I,J)= max(EP, PT_HP(I,J)*GI_52-P0_HP(I,J))
       !write(*,*) PD_HP(I,J)
       !read(*,*)
         end do
@@ -995,12 +995,12 @@ CALL DIVER(div_old(:,:),QX_old*GC1,QY_old*GC2,HX,HY,S,N,M,IP,1)
 CALL DIVER(div_new(:,:),QX *GC1   ,QY *GC2   ,HX,HY,S,N,M,IP,1)
 
 
-r_eval(:,:)=(0.5d0*(div_new(:,:)+div_old(:,:))*G_23-PD_old(:,:)+PT(:,:))
+r_eval(:,:)=(0.5d0*(div_new(:,:)+div_old(:,:))*G_52-PD_old(:,:)+PT(:,:))
 
 if (.not. (KT/NPRINT*NPRINT.NE.KT)) then
 !write(*,*) div_old(1,1),div_new(1,1), PD_old(1,1), PT(1,1)
-!write(*,*) 0.5d0*(div_old(1,1)+div_new(1,1))*G_23, -PD_old(1,1)+ PT(1,1)
-!write(*,*) 0.5d0*(div_old(1,1)+div_new(1,1))*G_23 -PD_old(1,1)+ PT(1,1)
+!write(*,*) 0.5d0*(div_old(1,1)+div_new(1,1))*G_52, -PD_old(1,1)+ PT(1,1)
+!write(*,*) 0.5d0*(div_old(1,1)+div_new(1,1))*G_52 -PD_old(1,1)+ PT(1,1)
 
 write(*,*) 'r EVAL'
   write(*,*) (maxval(abs(r_eval(:,J))), J=1,M)
@@ -1405,14 +1405,14 @@ END SUBROUTINE
 
 
 SUBROUTINE PRFORC_FIN( P,F1,F2,PB,P0,E1,E2,HX,HY,COR,       &
-     &            N,M,IP,GC1,GC2,Relax_M, DT_23, NOR,IRS)
+     &            N,M,IP,GC1,GC2,Relax_M, DT_52, NOR,IRS)
 use implicit_functions_DP
 
 implicit none
 DOUBLE PRECISION :: P(N,M),F1(N,M),F2(N,M),PB(N,M),P0(N,M),E1(N,M),E2(N,M), &
      & HX(N,M),HY(N,M),COR(N,M)
 DOUBLE PRECISION :: GC1, GC2
-DOUBLE PRECISION :: Relax_M(M), DT_23, Relaxation
+DOUBLE PRECISION :: Relax_M(M), DT_52, Relaxation
 INTEGER  :: IP(N)
 INTEGER  :: N, M, NOR, IRS
 
@@ -1456,7 +1456,7 @@ IF(NOR.EQ.1) THEN
       UTILD=F1(I,J)*(P0(I,J)-PB(I,J))+(P(I,J)-IRS*P0(I,J))*E1(I,J)
       VTILD=F2(I,J)*(P0(I,J)-PB(I,J))+(P(I,J)-IRS*P0(I,J))*E2(I,J)
       GMM=rpe_05*COR(I,J)
-      Relaxation=1.0d0+0.5d0*DT_23*Relax_M(J)
+      Relaxation=1.0d0+0.5d0*DT_52*Relax_M(J)
       F1(I,J)=(UTILD+GMM/Relaxation*VTILD)/(Relaxation+GMM**2/Relaxation)*GH1
       F2(I,J)=(VTILD-GMM/Relaxation*UTILD)/(Relaxation+GMM**2/Relaxation)*GH2
     end do
@@ -2987,7 +2987,7 @@ end do
 
 END subroutine
 
-SUBROUTINE XBC_23(X,N,M)
+SUBROUTINE XBC_52(X,N,M)
 use implicit_functions_DP
 
 implicit none
@@ -3054,10 +3054,10 @@ TIME=KT*DT/3600.0
  COUR1=0.0d0
  COUR2=0.0d0
 
-!GC1_23= DT_23/(2.0d0*ACOS(-1.0d0)/FLOAT(N-2))                                ! DT/DX
-!GC1 = GC1_23
-!GC2_23= DT_23/(ACOS(-1.0d0)/FLOAT(M))                                        ! DT/DY
-!GC2 = GC2_23
+!GC1_52= DT_52/(2.0d0*ACOS(-1.0d0)/FLOAT(N-2))                                ! DT/DX
+!GC1 = GC1_52
+!GC2_52= DT_52/(ACOS(-1.0d0)/FLOAT(M))                                        ! DT/DY
+!GC2 = GC2_52
 
 
 DO J=1,M
@@ -5628,6 +5628,5 @@ implicit none
       enddo
       print*, h0mx,h0mn
 
-      END subroutine
-
-
+      
+      end subroutine
