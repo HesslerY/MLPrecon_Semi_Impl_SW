@@ -5762,5 +5762,24 @@ implicit none
       enddo
       print*, h0mx,h0mn
 
-      end subroutine 
- 
+      
+      end subroutine
+
+function mean(Field, N,M) result(MeanV)
+      DOUBLE PRECISION :: Field(N,M)
+      integer :: I, J, N, M
+
+      double precision :: MeanV
+
+      MeanV=0.0d0
+
+Do I=1,N
+Do J=1,M
+MeanV=MeanV+Field(I,J)
+enddo
+enddo
+MeanV=MeanV/(N*M)
+
+end function
+
+
