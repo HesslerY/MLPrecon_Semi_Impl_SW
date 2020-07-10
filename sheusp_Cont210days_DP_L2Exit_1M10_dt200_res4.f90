@@ -32,7 +32,10 @@ DOUBLE PRECISION ::  U(N,M,0:1),&
                & Velfx(N,M),  &
                & Velfy(N,M),  &
                & QXS(N,M),    &
-               & QYS(N,M)
+               & QYS(N,M),    &
+               & PTS(N,M),    &
+               & US(N,M),    &
+               & VS(N,M)
 
 DOUBLE PRECISION :: MGH1IHX(M),  &
                & MGH2IHY(M),  &
@@ -117,6 +120,8 @@ DOUBLE PRECISION ::  R_52
 DOUBLE PRECISION :: USCAL_52 
 DOUBLE PRECISION ::  H00_52   
 DOUBLE PRECISION ::  HMTS_52, GMM_52, AMM, DETI
+
+double precision :: Mean
 
 Integer :: IPRINT
 
@@ -208,14 +213,14 @@ mountain = .false.
 stencil=0
 
 
-do ID_PREC=0,0,-5
+do ID_PREC=7,7,-5
  do IRHW = 3,3
 
   do DP_Depth=0,0,2
    write(Dp_depth_str,*) DP_Depth
 
   !ID_PREC=0
-   EXP_NAME= 'data/sheusp_SP_L2Exit_1M3_dt200_res4'
+   EXP_NAME= 'data/sheusp_Cont120days_DP_L2Exit_1M3_dt200_res4'
   ! EXP_NAME= 'data_ADI_Precon_init23'
 
 
@@ -281,12 +286,13 @@ atau=200.*DT_52 ! RHW4
 mpfl=999999
 elseif(IRHW==3) then
 !DATA NT,NPRINT/12096,864/
-NT = 6376 !int(6376*(200.0/240.0)) !12960  
-NPRINT = 797 !797 !797 !int(797*(200.0/240.0)) !864
+NT = 6048*14 !6048*9 
+NPRINT = 864/2 !797 !797 !int(797*(200.0/240.0)) !864
 DT_52=200.0d0
 KMX=4
 atau=2.*DT_52    !Zonal flow past Earth orography
 mpfl=999999
+write(*,*) 'Days of integration time', NT*DT_52/(24.0d0*3600.0d0)
 endif
  ! what if it ran with the timestep of the explicit model 
  ! DT_52=40.0d0   
@@ -326,7 +332,7 @@ if (IRHW==2) then
 !
 elseif(IRHW==3) then
 USCAL_52 = 20.!Piotrs new numbers old !5.0d0
-H00_52  = 8.E3
+H00_52  = 8.5E3
   HMTS_52  = 1.0 
   endif
 
@@ -524,6 +530,7 @@ IF(IRST.EQ.0) THEN
 
       QXS(I,J)=QX_HP(I,J)
       QYS(I,J)=QY_HP(I,J)
+      PTS(I,J)=PT_HP(I,J)
 
     end do
 
@@ -689,11 +696,13 @@ CALL DIAGNOS(QX_HP(:,:)/PD_HP(:,:),QY_HP(:,:)/PD_HP(:,:),PD_HP,&
 
 IF(IANAL.EQ.0) THEN
   DO KT=1,NT
-    if(int(float(kt)/float(mpfl))*mpfl.eq.kt) then
-      liner=1
-    else
+     write(*,*) 'timestep',kt, IRHW
+    !if(int(float(kt)/float(mpfl))*mpfl.eq.kt) then
+    ! write(*,*) 'liner', liner
+    !  liner=1
+    !else
       liner=0
-    endif
+    !endif
     !write(*,*) kt, int(float(kt)/float(mpfl))*mpfl, liner
     IPRINT=0
     IF(KT/NPRINT*NPRINT.EQ.KT) IPRINT=1
@@ -943,7 +952,7 @@ IF(IANAL.EQ.0) THEN
       DO J=1,M
         DO I=1,N
           PD(I,J)= max(EP, PT(I,J)*GI-P0(I,J))
-   
+          PT_HP(I,J)= PT(I,J)
         end do
       end do
    
@@ -1016,6 +1025,42 @@ PD_old(:,:)=PT(:,:)
 QX_old(:,:)=QX(:,:)
 QY_old(:,:)=QY(:,:)
 
+IF(.not. (KT/6048*6048 .NE. KT)) THEN
+! INITIATE PRIMARY VARIABLES (PD, QX, QY)
+write(*,*) 'reinitialize', kt, 6048
+QX_HP(:,:)=  QX(:,:)
+QY_HP(:,:)=  QY(:,:)
+  DO J=1,M
+
+      PT_HP(2:N-1,J)= PTS(2:N-1,J)+0.7d0*(PT_HP(2:N-1,J)-Mean(PT_HP(2:N-1,J),N-2,1))
+      US(2:N-1,J) =QX_HP(2:N-1,J)/PD_HP(2:N-1,J)
+      VS(2:N-1,J) =QY_HP(2:N-1,J)/PD_HP(2:N-1,J)
+  end do
+  call XBC(PT_HP, N, M)
+
+  PT(:,:)=PT_HP(:,:)
+  DO J=1,M
+   DO I=1,N
+     PD_HP(I,J)= max(EP, PT_HP(I,J)*GI_52-P0_HP(I,J))
+     PD(I,J)= PD_HP(I,J)
+   end do
+  end do
+
+
+  DO J=1,M
+
+      QX_HP(2:N-1,J)= PD_HP(2:N-1,J)*(U_52(2:N-1,J)+0.7d0*(US(2:N-1,J)&
+                                         & -Mean(US(2:N-1,J),N-2,1)))
+      QY_HP(2:N-1,J)= PD_HP(2:N-1,J)*(V_52(2:N-1,J)+0.7d0*(VS(2:N-1,J)&
+                                         & -Mean(VS(2:N-1,J),N-2,1)))
+
+  end do
+  call XBC(QX_HP, N, M)
+  call XBC(QY_HP, N, M)
+  QX(:,:)=QX_HP(:,:)
+  QY(:,:)=QY_HP(:,:)
+
+endif
 !end sanity check for elliptic problem
 ! COMPUTE NEW FORCES
 
@@ -1042,6 +1087,16 @@ QY_old(:,:)=QY(:,:)
         !read(*,*)
       end do
     end do
+
+    IF(.not. (KT/6048*6048 .NE. KT)) THEN
+     DO J=1,M
+       DO I=1,N 
+
+        E1(I,J,-1)=E1(I,J,0)
+        E2(I,J,-1)=E2(I,J,0)
+       end do
+     end do
+   endif
 
     DO J=1,M
       DO I=1,N
@@ -1072,7 +1127,16 @@ QY_old(:,:)=QY(:,:)
 
 
 !COMPUTE OUTPUTED FIELDS ****************************************
+        DO J=1,M
+          DO I=1,N
 
+            QX_HP(I,J)= QX(I,J)
+            QY_HP(I,J)= QY(I,J)
+          end do
+        end do
+      CALL DIAGNOS(QX_HP(:,:)/PD_HP(:,:),QY_HP(:,:)/PD_HP(:,:),PD_HP,&
+                 & PT,HX,HY,IP,S,TIME,DX,DY,DT, SUM0,SUM1, &
+                 & KT,N,M,1, NITER,NITSM,ICOUNT,ERROR, sum_time, sum_lp_time)
     IF(.not. (KT/NPRINT*NPRINT.NE.KT)) then
     
     
@@ -1255,12 +1319,12 @@ PH0= 78.4E3
 
 DO J=1,M
   TH=Y(J)
-  ATH(J)=OM*0.5*(F0+OM)*(COS(TH))**2                          &
-     &  +0.25*K**2*(COS(TH))**(2*R)*( (R+1)*(COS(TH))**2      &
-     &   +FLOAT(2*R**2-R-2)-2.*R**2/(COS(TH))**2 )
+  ATH(J)=OM*0.5d0*(F0+OM)*(COS(TH))**2                          &
+     &  +0.25d0*K**2*(COS(TH))**(2*R)*( (R+1)*(COS(TH))**2      &
+     &   +FLOAT(2*R**2-R-2)-2.0d0*R**2/(COS(TH))**2 )
   BTH(J)=(F0+2.*OM)*K/FLOAT((R+1)*(R+2))*(COS(TH))**R         &
      &       *( FLOAT(R**2+2*R+2)-((R+1)*COS(TH))**2 )
-  CTH(J)=0.25*K**2*(COS(TH))**(2*R)*( FLOAT(R+1)*(COS(TH))**2 &
+  CTH(J)=0.25d0*K**2*(COS(TH))**(2*R)*( FLOAT(R+1)*(COS(TH))**2 &
      &       -FLOAT(R+2) )  
 end do
 
@@ -1269,9 +1333,9 @@ DO J=1,M
     COR(I,J)=F0*SIN(Y(J))
     U(I,J)=A*OM*COS(Y(J))+A*K*COS(R*X(I))                      &
        &   *(COS(Y(J)))**(R-1)*(R*(SIN(Y(J)))**2-(COS(Y(J)))**2)
-      V(I,J)=-A*K*R*(COS(Y(J)))**(R-1)*SIN(Y(J))*SIN(R*X(I))
-      PT(I,J)=PH0+A**2*ATH(J)+A**2*BTH(J)*COS(R*X(I))      &
-       &   +A**2*CTH(J)*COS(2.*R*X(I))
+    V(I,J)=-A*K*R*(COS(Y(J)))**(R-1)*SIN(Y(J))*SIN(R*X(I))
+    PT(I,J)=PH0+A**2*ATH(J)+A**2*BTH(J)*COS(R*X(I))      &
+       &   +A**2*CTH(J)*COS(2.0d0*R*X(I))
   end do
 end do
   write (6,*)  'initrhw called'
@@ -3742,7 +3806,7 @@ endif
    ! read(*,*)
 
     errn=sqrt(errn)
-   write(*,*) niter, errn, err0
+   !write(*,*) niter, errn, err0
    !read(*,*)
     if(errn.lt.eps*err0 .and. it > itmn) exiting=.true.
     if(errn.ge.errnm1) exiting=.true.
@@ -4023,7 +4087,7 @@ enddo
 T_step=max_QX_QY !0.92d0!
 Delta_t=rpe_1/T_step
 
-write(*,*) 'Delta_T',Delta_t
+!write(*,*) 'Delta_T',Delta_t
 
 !max_QX_QY=(rpe_2*abs(A21(1,1)))/( ( (2.0d0*acos(-1.0d0)/Dfloat(M)) *6371.22E+03 )**2 )
 !DO J=1,M
@@ -4681,7 +4745,7 @@ end do
   END DO
 
 Delta_t_I=rpe_1/(rpe_025/T_step)
-write(*,*) Delta_t_I, T_step
+!write(*,*) Delta_t_I, T_step
 
 
       DO J=1,M
@@ -5630,3 +5694,22 @@ implicit none
 
       
       end subroutine
+
+function mean(Field, N,M) result(MeanV)
+      DOUBLE PRECISION :: Field(N,M)
+      integer :: I, J, N, M
+
+      double precision :: MeanV
+
+      MeanV=0.0d0
+
+Do I=1,N
+Do J=1,M
+MeanV=MeanV+Field(I,J)
+enddo
+enddo
+MeanV=MeanV/(N*M)
+
+end function
+
+

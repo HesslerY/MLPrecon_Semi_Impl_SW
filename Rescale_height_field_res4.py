@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 #from pathlib import Path
 from scipy.linalg import norm
 
-
+import matplotlib.colors as colors
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib
 
@@ -36,7 +36,7 @@ path=  'data_ADI_Precon/'
 #path_true='../data/data_ADI_LinfPhiEXIT1M10_Dp_refInst_dt200_res8/'
 #path_ref='../data/data_ADI_LinfPhiEXIT1M10_Dp_refInst_dt200_res4/'
 pathlist= ['../data/sheusp_Cont120days_DP_L2Exit_1M3_dt200_res4/'] # '../data/data_ADI_NOTgcr_D6_2M4_RP_res4/'
-
+path_topo='/home/jan/Documents/MPDATA/data/data_ADI_NOTgcr_EXP3_Dp_1M10_res4/Topo/Timestep0.txt'
 
 
 #path_refRP='../data/data_ADI_NOTgcr_D2_3M4_RP_Ext_res2/'
@@ -64,22 +64,26 @@ codesD='F'
 res=4
 # timestep 200 seconds
 #times=[0, 44, 88, 132, 177, 221, 265, 309, 354]
-#times=[0, 48,48*10, 3024]
-times= range(0,3024+1,24)
-tprint= 864.0*200.0 # in seconds
+#times=[0, 48, 3024]
+times= range(0,3024 ,24)
+tprint= 797.0*200.0 # in seconds
+tprint= 868.0*200.0 # in seconds
 # timestep 270 seconds
 #times=[0, 44, 88, 132, 177, 221, 265, 309, 354]
 #tprint= 797.0*(200.0/270.0)*270.0 # in seconds
 
 cmap = plt.get_cmap('nipy_spectral')
 new_cmap = truncate_colormap(cmap, 0.15, 1.0)
-  
+
+
+R=  6371.22E+03
+
 ############## MAIN PROGRAMM ###################### 
 for path in pathlist: 
 
     for Precon in range(7,8,5): 
 
-        pdf_pages = PdfPages(path+'H_U_V_'+'Precon'+str(Precon)+'_exp'+str(exp)+'_codes_'+codesQ+codesD+'DP_reinit08_H008.pdf')
+        pdf_pages = PdfPages(path+'H'+'Precon'+str(Precon)+'_exp'+str(exp)+'_codes_'+codesQ+codesD+'DP.pdf')
         for P_steps in range(len(times)):
           time=times[P_steps]
           plotnum=0
@@ -97,51 +101,56 @@ for path in pathlist:
             xcoord, ycoord, mean_varU=np.loadtxt( filenameU, usecols=(0,1,2), unpack=True)
             xcoord, ycoord, mean_varV=np.loadtxt( filenameV, usecols=(0,1,2), unpack=True)
             xcoord, ycoord, mean_var_ref=np.loadtxt( filename_ref, usecols=(0,1,2), unpack=True)
+            Topo=np.loadtxt( path_topo, usecols=(0), unpack=True)
 
             ncols, nrows = len(set(xcoord)), len(set(ycoord)) 
-       
+            latitudes= sorted(set(ycoord))
+            Alllatitudes = np.zeros((nrows+2))
+            Alllatitudes[1:nrows+1]=latitudes
+            Alllatitudes[0]=-np.pi/2.0
+            Alllatitudes[nrows+1]=np.pi/2.0
+            #print(Alllatitudes)
+            Alldy = np.zeros((nrows+1))
+            Alldx = np.zeros((nrows+1))
+            Alldy[:]=R/nrows
+            Alldy[0]=R/nrows/2.0
+            Alldy[nrows]=R/nrows/2.0
+            #print(Alldy)
+            for J in range(nrows+1):
+              Alldx[J]=R/ncols*np.cos(0.5*(Alllatitudes[J]+Alllatitudes[J+1]))
+            #print(Alldx)
+
             grid_var = (mean_var.reshape((nrows, ncols), order='F'))
-            grid_varU = (mean_varU.reshape((nrows, ncols), order='F'))
-            grid_varV = (mean_varV.reshape((nrows, ncols), order='F'))
             grid_var_ref = (mean_var_ref.reshape((nrows, ncols), order='F'))
+            grid_Topo = (Topo.reshape((nrows, ncols), order='F'))
 
-            grid_xcoord= (xcoord.reshape((nrows, ncols), order='F'))
-            grid_ycoord= (ycoord.reshape((nrows, ncols), order='F'))
+            #for J in range(nrows):
+            #  grid_var[J,:]=grid_var[J,:]-np.mean(grid_var[J,:])
+            grid_var[:,:]=grid_var[:,:]-grid_Topo[:,:]
 
-
-            if (exp == '1'):
-              grid_var=(grid_var-8000.)/8000.
-            elif (exp == '3'):
-              grid_var=(grid_var-grid_var_ref)/8000.
-              print(np.amin(grid_var),np.amax(grid_var))
-
+ 
             plotid='31'+str(plotnum)
             plt.subplot(plotid)
             plt.title(var, loc='left')
             plt.xlabel('lon', fontsize=18)
             plt.ylabel('lat', fontsize=18)
-            #if (var == 'V'):
-            plt.contour(grid_var, 20, linewidths=0.5, extent=(xcoord.min(), xcoord.max(), 
-               ycoord.min(), ycoord.max()),
-               interpolation='None', colors='black', vmin=np.amin((grid_var)), vmax=np.amax(grid_var))
-            q= plt.quiver(grid_xcoord[::16, ::16],grid_ycoord[::16, ::16], grid_varU[::16, ::16],grid_varV[::16, ::16], pivot='mid', width=0.0015, scale=1/0.0009)
-            if (exp == '1'):
-              plt.quiverkey(q, 0.9, 1.05, 100, r'$100 \frac{m}{s}$', labelpos='E')
-            elif (exp == '3'):
-              plt.quiverkey(q, 0.9, 1.05, 40, r'$40 \frac{m}{s}$', labelpos='E')
-            #else:
-            #  plt.imshow(grid_var, extent=(xcoord.min(), xcoord.max(), 
-            #   ycoord.min(), ycoord.max()),
-            #   interpolation='None', cmap=new_cmap, vmin=np.amin((grid_var)), vmax=np.amax(abs(grid_var)))
-            #plt.imshow(grid, extent=(xcoord.min(), xcoord.max(), 
-            #   ycoord.min(), ycoord.max()),
-            #   interpolation='nearest', cmap=cm.bwr)
-            #plt.colorbar()
+
+            #plt.imshow(grid_var, extent=(xcoord.min(), xcoord.max(), 
+            # ycoord.min(), ycoord.max()),
+            # interpolation='None', cmap=new_cmap, vmin=np.amin((grid_var)), vmax=np.amax(abs(grid_var)))
+            #plt.imshow(np.flipud(grid_Vort), extent=(xcoord.min(), xcoord.max(), 
+            # ycoord.min(), ycoord.max()),
+            # interpolation='nearest',    norm=colors.LogNorm(linthresh=0.0001, linscale=1.0, base=10), cmap=cm.bwr, vmin=-np.amax(abs(grid_Vort)), vmax=np.amax(abs(grid_Vort)))
+            plt.imshow(np.flipud(grid_var), extent=(xcoord.min(), xcoord.max(), 
+             ycoord.min(), ycoord.max()),
+             interpolation='nearest',  cmap=cm.jet, vmin=0.0, vmax=np.amax(abs(grid_var)))
+            #plt.yscale('symlog', linthreshy=0.01)
+            plt.colorbar()
           plt.tight_layout()
           pdf_pages.savefig(fig)
           plt.close()
         pdf_pages.close()
-        print(path+'Precon'+str(Precon)+'_' + var+'_exp'+str(exp)+'_time'+str(time)+'_codes_'+codesQ+codesD+'_bits'+str(23)+'.pdf')
+        print(path+'DP_'+'Precon'+str(Precon)+'_exp'+str(exp)+'_codes_'+codesQ+codesD+'DP.pdf')
 
 
 

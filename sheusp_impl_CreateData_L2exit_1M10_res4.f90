@@ -32,7 +32,10 @@ DOUBLE PRECISION ::  U(N,M,0:1),&
                & Velfx(N,M),  &
                & Velfy(N,M),  &
                & QXS(N,M),    &
-               & QYS(N,M)
+               & QYS(N,M),    &
+               & PTS(N,M),    &
+               & US(N,M),    &
+               & VS(N,M)
 
 DOUBLE PRECISION :: MGH1IHX(M),  &
                & MGH2IHY(M),  &
@@ -117,6 +120,8 @@ DOUBLE PRECISION ::  R_52
 DOUBLE PRECISION :: USCAL_52 
 DOUBLE PRECISION ::  H00_52   
 DOUBLE PRECISION ::  HMTS_52, GMM_52, AMM, DETI
+
+double precision :: Mean
 
 Integer :: IPRINT
 
@@ -206,7 +211,7 @@ mountain = .false.
 stencil=0
 
 
-do ID_PREC=0,0,-5
+do ID_PREC=7,7,-5
  do IRHW = 3,3
 
   do DP_Depth=0,0,2
@@ -278,12 +283,13 @@ atau=200.*DT_52 ! RHW4
 mpfl=999999
 elseif(IRHW==3) then
 !DATA NT,NPRINT/12096,864/
-NT = 6376 !int(6376*(200.0/240.0)) !12960  
-NPRINT = 797 !797 !797 !int(797*(200.0/240.0)) !864
+NT = 6048*9 !int(6376*(200.0/240.0)) !12960  
+NPRINT = 864/2 !797 !797 !int(797*(200.0/240.0)) !864
 DT_52=200.0d0
 KMX=4
 atau=2.*DT_52    !Zonal flow past Earth orography
 mpfl=999999
+write(*,*) 'Days of integration time', NT*DT_52/(24.0d0*3600.0d0)
 endif
 write(*,*) 'Timestep:', DT_52
  ! what if it ran with the timestep of the explicit model 
@@ -324,7 +330,7 @@ if (IRHW==2) then
 !
 elseif(IRHW==3) then
 USCAL_52 = 20.!Piotrs new numbers old !5.0d0
-H00_52  = 8.E3
+H00_52  = 8.5E3
   HMTS_52  = 1.0 
   endif
 
@@ -522,6 +528,7 @@ IF(IRST.EQ.0) THEN
 
       QXS(I,J)=QX_HP(I,J)
       QYS(I,J)=QY_HP(I,J)
+      PTS(I,J)=PT_HP(I,J)
 
     end do
 
@@ -565,6 +572,7 @@ If(QRelax) then
        AD(J)=A*D
        BD(J)=B*D
       enddo
+
 else
 
       DO J=1,M
@@ -916,6 +924,7 @@ IF(IANAL.EQ.0) THEN
       DO J=1,M
         DO I=1,N
             PT(I,J)= PT_HP(I,J)
+
         end do
       end do
     
@@ -942,7 +951,7 @@ IF(IANAL.EQ.0) THEN
       DO J=1,M
         DO I=1,N
           PD(I,J)= max(EP, PT(I,J)*GI-P0(I,J))
-   
+          PT_HP(I,J)= PT(I,J)
         end do
       end do
    
@@ -1015,6 +1024,42 @@ PD_old(:,:)=PT(:,:)
 QX_old(:,:)=QX(:,:)
 QY_old(:,:)=QY(:,:)
 
+IF(.not. (KT/6048*6048 .NE. KT)) THEN
+! INITIATE PRIMARY VARIABLES (PD, QX, QY)
+write(*,*) 'reinitialize', kt, 6048
+QX_HP(:,:)=  QX(:,:)
+QY_HP(:,:)=  QY(:,:)
+  DO J=1,M
+
+      PT_HP(2:N-1,J)= PTS(2:N-1,J)+0.7d0*(PT_HP(2:N-1,J)-Mean(PT_HP(2:N-1,J),N-2,1))
+      US(2:N-1,J) =QX_HP(2:N-1,J)/PD_HP(2:N-1,J)
+      VS(2:N-1,J) =QY_HP(2:N-1,J)/PD_HP(2:N-1,J)
+  end do
+  call XBC(PT_HP, N, M)
+
+  PT(:,:)=PT_HP(:,:)
+  DO J=1,M
+   DO I=1,N
+     PD_HP(I,J)= max(EP, PT_HP(I,J)*GI_52-P0_HP(I,J))
+     PD(I,J)= PD_HP(I,J)
+   end do
+  end do
+
+
+  DO J=1,M
+
+      QX_HP(2:N-1,J)= PD_HP(2:N-1,J)*(U_52(2:N-1,J)+0.7d0*(US(2:N-1,J)&
+                                         & -Mean(US(2:N-1,J),N-2,1)))
+      QY_HP(2:N-1,J)= PD_HP(2:N-1,J)*(V_52(2:N-1,J)+0.7d0*(VS(2:N-1,J)&
+                                         & -Mean(VS(2:N-1,J),N-2,1)))
+
+  end do
+  call XBC(QX_HP, N, M)
+  call XBC(QY_HP, N, M)
+  QX(:,:)=QX_HP(:,:)
+  QY(:,:)=QY_HP(:,:)
+
+endif
 !end sanity check for elliptic problem
 ! COMPUTE NEW FORCES
 
@@ -1041,6 +1086,16 @@ QY_old(:,:)=QY(:,:)
         !read(*,*)
       end do
     end do
+
+    IF(.not. (KT/6048*6048 .NE. KT)) THEN
+     DO J=1,M
+       DO I=1,N 
+
+        E1(I,J,-1)=E1(I,J,0)
+        E2(I,J,-1)=E2(I,J,0)
+       end do
+     end do
+   endif
 
     DO J=1,M
       DO I=1,N
@@ -1071,7 +1126,16 @@ QY_old(:,:)=QY(:,:)
 
 
 !COMPUTE OUTPUTED FIELDS ****************************************
+        DO J=1,M
+          DO I=1,N
 
+            QX_HP(I,J)= QX(I,J)
+            QY_HP(I,J)= QY(I,J)
+          end do
+        end do
+      CALL DIAGNOS(QX_HP(:,:)/PD_HP(:,:),QY_HP(:,:)/PD_HP(:,:),PD_HP,&
+                 & PT,HX,HY,IP,S,TIME,DX,DY,DT, SUM0,SUM1, &
+                 & KT,N,M,1, NITER,NITSM,ICOUNT,ERROR, sum_time, sum_lp_time)
     IF(.not. (KT/NPRINT*NPRINT.NE.KT)) then
     
     
@@ -4752,7 +4816,7 @@ end do
   END DO
 
 Delta_t_I=rpe_1/(rpe_025/T_step)
-write(*,*) Delta_t_I, T_step
+!write(*,*) Delta_t_I, T_step
 
 
       DO J=1,M
