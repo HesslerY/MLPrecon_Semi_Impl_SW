@@ -7,7 +7,7 @@ from keras.optimizers import rmsprop,adam
 import keras.backend as K
 
 def main(activation = 'relu',learning_rate=10.0**(-5),hidden_layers=5,width=200,Lat=9):
-    K.set_floatx('float64')
+    #K.set_floatx('float64')
     inputs= 176 
     outputs= 1 
     print('load Training data')
@@ -15,7 +15,7 @@ def main(activation = 'relu',learning_rate=10.0**(-5),hidden_layers=5,width=200,
     print(hidden_layers)
     print(width)
     #x, y = load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_res05/training32x2_32x0.h5')
-    x, y = load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res05/training_Lcoeff_R_2x2_1x0'+str(Lat)+'DP.h5')
+    x, y = load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res4/training_Lcoeff_R_2x2_1x0'+str(Lat)+'DP.h5')
     print(np.sqrt(np.mean(np.square(y))) )
     print(np.mean(np.absolute(y)) )
     print (x[0,:])
@@ -25,7 +25,7 @@ def main(activation = 'relu',learning_rate=10.0**(-5),hidden_layers=5,width=200,
 
     print('load validation data')
     #x_val, y_val =  load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_res05/validation32x2_32x0.h5')
-    x_val, y_val =  load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res05/validation_Lcoeff_R_2x2_1x0'+str(Lat)+'DP.h5')
+    x_val, y_val =  load_pair('../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res4/validation_Lcoeff_R_2x2_1x0'+str(Lat)+'DP.h5')
     print(np.sqrt(np.mean(np.square(y_val))) )
     print(np.mean(np.absolute(y_val)) )
 
@@ -56,32 +56,32 @@ def main(activation = 'relu',learning_rate=10.0**(-5),hidden_layers=5,width=200,
     Minima[0]=-3.5/2.0 #min(x[:,0])
     Mean[0]=0.0
 
-    Maxima[1]=21.0 #max(x[:,i])
-    Minima[1]=-21.0 #min(x[:,i])  
+    Maxima[1]=1100.0 #max(x[:,i])
+    Minima[1]=-1100.0 #min(x[:,i])  
     Mean[1]=0.0
 
-    Maxima[2]=8.54163233e+11 #21.0 #max(x[:,i])
-    Minima[2]=2.48437139e+10
-    Mean[2]=1.17612126e+11 #0.0
+    Maxima[2]=370735007156489.9 #21.0 #max(x[:,i])
+    Minima[2]=   285797600451.5306
+    Mean[2]  =  8832816614973.127 #0.0
 
-    Maxima[3]=7.32606531e+08 #21.0 #max(x[:,i])
-    Minima[3]=-7.32606531e+08 #-21.0 #min(x[:,i])  
-    Mean[3]=0.0
+    Maxima[3]=40927556954.599144 #21.0 #max(x[:,i])
+    Minima[3]=-40927556954.599144 #-21.0 #min(x[:,i])  
+    Mean[3]= 0.0     
 
-    Maxima[4]=4.34271611e+10 #1.0 #max(x[:,i])
-    Minima[4]=1.28429346e+09  
-    Mean[4]=2.57373289e+10
+    Maxima[4]=2814357893215.7007 #1.0 #max(x[:,i])
+    Minima[4]=   5861279991.116582
+    Mean[4]  =1632540745224.2573
 
-    Maxima[5]=7.32606531e+08
-    Minima[5]=-7.32606531e+08
+    Maxima[5]= 40927556954.59915
+    Minima[5]=-40927556954.59915
     Mean[5]=0.0
 
-    Maxima[6]=5.26020440e+09 #21.0 #max(x[:,i])
-    Minima[6]=-5.26020440e+09 #-21.0 #min(x[:,i])  
+    Maxima[6]=12286263193393.56 #21.0 #max(x[:,i])
+    Minima[6]=-12286263193393.56 #-21.0 #min(x[:,i])  
     Mean[6]=0.0
 
-    Maxima[7]=2.63625191e+09 #21.0 #max(x[:,i])
-    Minima[7]=-2.63625191e+09 #-21.0 #min(x[:,i])  
+    Maxima[7]= 163170483547.3604 #21.0 #max(x[:,i])
+    Minima[7]=-163170483547.3604 #-21.0 #min(x[:,i])  
     Mean[7]=0.0
 
 
@@ -246,15 +246,15 @@ def load_pair(fname):
     hf.close()
     return x,y
 
-for Latitude in range(0,32):
+for Latitude in range(0,256):
   main(width=1,hidden_layers=0,Lat=Latitude)   ## how good is the linear model?
 
 for w_width in [ 5]:
-    for Latitude in range(0,32):
+    for Latitude in range(0,256):
       main(width=w_width,hidden_layers=1,Lat=Latitude)
 
 for w_width in [200]:
-    for Latitude in range(10,32):
+    for Latitude in range(0,256):
       main(width=w_width,hidden_layers=5,Lat=Latitude)
 
 

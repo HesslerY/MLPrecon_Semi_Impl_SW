@@ -2,37 +2,48 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-path='../data/data_ADI_NOTgcr_EXP3_Dp_1M10_pseut_res05'
+path='../data/data_ADI_NOTgcr_EXP3_Dp_1M10_res4'
 
-grid_zonal=64
-grid_merid=32
+grid_zonal=512
+grid_merid=256
+dt=200
 
 zonal_ext=2
 zonal_ext_o=0
 merid_ext=2
 
+start_learning= 5000 # 5000
+end_learning=  22000 #10000
+
+start_valid= 22001
+end_valid=  27000
+
+base_day=0
+days_to_timesteps=(24*3600)/dt
+increment=8
+
 
 validation_set=[]
-for i in range(10440,12240,1):
+for i in range((base_day+16*1)*days_to_timesteps,(base_day+16*1+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(18000,19800,1):
+for i in range((base_day+16*2)*days_to_timesteps,(base_day+16*2+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(25560,27360,1):
+for i in range((base_day+16*3)*days_to_timesteps,(base_day+16*3+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(33120,34920,1):
+for i in range((base_day+16*4)*days_to_timesteps,(base_day+16*4+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(40680,42839,1):
+for i in range((base_day+16*5)*days_to_timesteps,(base_day+16*5+4)*days_to_timesteps,increment):
   validation_set.append(i)
 
 iteration=1
 
 #inputs=max(zonal_ext,merid_ext*2+1)*3+ ((merid_ext-1)*2+1)*2+ ((merid_ext-2)*2+1)*2  #zonal bands for 3 inputs+stencil
 
-latitudes=np.zeros(32)
+latitudes=np.zeros(256)
 
 
 
-file_grid = path+'/Precon5_H_exp3_time0_codes_FT_bits52.txt'
+file_grid = path+'/Precon7_H_exp3_time0_codes_FF_bits52.txt'
 xcoord, ycoord=np.loadtxt( file_grid, usecols=(0,1), unpack=True)
 
 ncols, nrows = len(set(xcoord)), len(set(ycoord)) 
@@ -97,7 +108,7 @@ for lat in range(0,nrows):
   print(str(lat))
   print(np.mean(np.absolute(orig_error)) )
   print(np.mean(np.absolute(iter_error)) )
-  f = open("truth_diff_METRICnorm_iter_1_pseut_Lats.txt", "a")
+  f = open("truth_diff_METRICnorm_iter_1_Lats.txt", "a")
   f.write(str(lat)+' '+str(np.mean(np.absolute(orig_error))) +' '+ str(np.mean(np.absolute(orig_error)))  +' '+str(np.mean(np.absolute(iter_error)) ) + '\n')
   f.close()
 

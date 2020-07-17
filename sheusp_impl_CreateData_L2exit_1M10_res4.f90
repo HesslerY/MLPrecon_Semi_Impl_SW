@@ -3878,7 +3878,7 @@ endif
    ! read(*,*)
 
     errn=sqrt(errn)
-   write(*,*) niter, errn, err0
+   !write(*,*) niter, errn, err0
    !read(*,*)
     if(errn.lt.eps*err0 .and. it > itmn) exiting=.true.
     if(errn.ge.errnm1) exiting=.true.

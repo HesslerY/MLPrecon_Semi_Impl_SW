@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-path='../data/data_ADI_NOTgcr_EXP3_Dp_1M10_res05'
+path='../data/data_ADI_NOTgcr_EXP3_Dp_1M10_res4'
 
-grid_zonal=64
-grid_merid=32
+grid_zonal=512
+grid_merid=256
+dt=200
 
 zonal_ext=2
 zonal_ext_o=0
@@ -17,36 +18,39 @@ end_learning=  22000 #10000
 start_valid= 22001
 end_valid=  27000
 
+base_day=0
+days_to_timesteps=(24*3600)/dt
+increment=8
 learning_set=[]
-for i in range(5040,10080,1):
+for i in range((base_day+0)*days_to_timesteps+1,(base_day+14)*days_to_timesteps,increment):
   learning_set.append(i)
-for i in range(12600,17640,1):
+for i in range((base_day+21)*days_to_timesteps,(base_day+21+14)*days_to_timesteps,increment):
   learning_set.append(i)
-for i in range(20160,25200,1):
+for i in range((base_day+42)*days_to_timesteps,(base_day+42+14)*days_to_timesteps,increment):
   learning_set.append(i)
-for i in range(27720,32760,1):
+for i in range((base_day+63)*days_to_timesteps,(base_day+63+14)*days_to_timesteps,increment):
   learning_set.append(i)
-for i in range(35280,40320,1):
+for i in range((base_day+84)*days_to_timesteps,(base_day+84+14)*days_to_timesteps,increment):
   learning_set.append(i)
 
 validation_set=[]
-for i in range(10440,12240,1):
+for i in range((base_day+16*1)*days_to_timesteps,(base_day+16*1+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(18000,19800,1):
+for i in range((base_day+16*2)*days_to_timesteps,(base_day+16*2+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(25560,27360,1):
+for i in range((base_day+16*3)*days_to_timesteps,(base_day+16*3+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(33120,34920,1):
+for i in range((base_day+16*4)*days_to_timesteps,(base_day+16*4+4)*days_to_timesteps,increment):
   validation_set.append(i)
-for i in range(40680,42839,1):
+for i in range((base_day+16*5)*days_to_timesteps,(base_day+16*5+4)*days_to_timesteps,increment):
   validation_set.append(i)
 
 # 43200
 def save_pair(x,y,fname):
     import h5py
     hf = h5py.File(fname, 'w')
-    hf.create_dataset('x', data=x, dtype='float64')
-    hf.create_dataset('y', data=y, dtype='float64')
+    hf.create_dataset('x', data=x)
+    hf.create_dataset('y', data=y)
     hf.close()
     return
 
@@ -66,7 +70,7 @@ y_val=np.zeros(((len(validation_set))*grid_zonal,outputs))
 print ((len(validation_set))*grid_zonal)
 latitudes=np.zeros(32)
 
-file_grid = path+'/Precon5_H_exp3_time0_codes_FT_bits52.txt'
+file_grid = path+'/Precon7_H_exp3_time0_codes_FF_bits52.txt'
 xcoord, ycoord=np.loadtxt( file_grid, usecols=(0,1), unpack=True)
 
 ncols, nrows = len(set(xcoord)), len(set(ycoord)) 
@@ -166,7 +170,7 @@ for lat in range(0,nrows):
            #print(counter)
   print(indexing)
   print ('writing file')
-  save_pair(x,y,'../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res05/training_Lcoeff_R_'+str(zonal_ext)+'x'+str(merid_ext)+'_1x0'+str(lat)+'DP.h5')
+  save_pair(x,y,'../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res4/training_Lcoeff_R_'+str(zonal_ext)+'x'+str(merid_ext)+'_1x0'+str(lat)+'DP.h5')
 
 
   indexing=0
@@ -254,7 +258,7 @@ for lat in range(0,nrows):
            #print(counter)
   print(indexing)
   print ('writing file')
-  save_pair(x_val,y_val,'../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res05/validation_Lcoeff_R_'+str(zonal_ext)+'x'+str(merid_ext)+'_1x0'+str(lat)+'DP.h5')
+  save_pair(x_val,y_val,'../data/ML_data_ADI_NOTgcr_EXP3_Dp_1M10_res4/validation_Lcoeff_R_'+str(zonal_ext)+'x'+str(merid_ext)+'_1x0'+str(lat)+'DP.h5')
 
 
 def load_pair(fname):
